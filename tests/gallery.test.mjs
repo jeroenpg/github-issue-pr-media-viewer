@@ -1,6 +1,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, mkdtemp, rm } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
@@ -9,11 +10,12 @@ let context, profile;
 const fixture = await readFile(new URL('./fixtures/conversation.html', import.meta.url), 'utf8');
 const video = await readFile(new URL('./fixtures/sample.webm', import.meta.url));
 const root = resolve(import.meta.dirname, '..');
+const browserPath = process.env.BROWSER_PATH || (existsSync('/usr/bin/brave-browser') ? '/usr/bin/brave-browser' : chromium.executablePath());
 const model = await readFile(resolve(root, 'media-model.js'), 'utf8');
 before(async () => {
   profile = await mkdtemp(`${tmpdir()}/ghmg-test-`);
   context = await chromium.launchPersistentContext(profile, {
-    executablePath: process.env.BROWSER_PATH || '/usr/bin/brave-browser',
+    executablePath: browserPath,
     headless: true,
     viewport: { width: 1440, height: 1000 },
     args: [`--disable-extensions-except=${root}`, `--load-extension=${root}`],
