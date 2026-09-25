@@ -6,6 +6,8 @@ GitHub Media Gallery keeps the conversation on the left and opens a media-only r
 
 It is a build-free Manifest V3 extension for Chrome-based browsers. Brave uses the same extension APIs, so the same source works in Chrome and Brave.
 
+[Download the latest extension release](https://github.com/jeroenpg/github-issue-pr-media-viewer/releases/latest/download/github-media-gallery-latest.zip) as a ZIP, extract it, and load the extracted folder as an unpacked extension.
+
 ## What it does
 
 - Opens at the image or video you clicked, without navigating away from GitHub.
@@ -21,6 +23,12 @@ It is a build-free Manifest V3 extension for Chrome-based browsers. Brave uses t
 - Does not post comments, call a backend, collect analytics, or upload media. Files remain on their original GitHub or external host.
 
 The gallery indexes media GitHub has loaded. If a comment is collapsed or GitHub has not loaded older comments yet, expand or load it and the extension will rescan automatically.
+
+## Why this helps with agent screenshots
+
+Coding agents often report visual changes with a compact Before / After table. That format is useful in a pull request, but the two screenshots become very small when GitHub fits them into table columns. Clicking one usually takes you to a separate image view or download-style URL, which breaks the review flow and makes it awkward to compare the pair with the surrounding explanation.
+
+This extension keeps the GitHub conversation in place, opens the selected screenshot or video at a useful size, and lets you move through every asset with the arrow keys. The page scrolls to the source comment or body section so the screenshot, author, and surrounding evidence remain connected.
 
 ## Screenshots
 
@@ -38,7 +46,7 @@ In both screenshots, the selected screenshot is the first item in the PR body. T
 
 ## Test fixture issue
 
-Use [Test Issue #1](https://github.com/jeroenpg/github-issue-pr-media-viewer/issues/1) to try the extension. It contains lorem ipsum text, two screenshots in the issue body, and additional screenshots in comments so the **Comments only** and **This comment** filters can be tried safely.
+Use [Test Issue #1](https://github.com/jeroenpg/github-issue-pr-media-viewer/issues/1) to try the extension. Its issue body and both comments use compact **Before / After** screenshot tables with lorem ipsum text, so the small-table problem and the **Comments only** / **This comment** filters can be tried safely.
 
 ## Install from source in Brave or Chrome
 
@@ -52,7 +60,7 @@ Use [Test Issue #1](https://github.com/jeroenpg/github-issue-pr-media-viewer/iss
 6. Pin **GitHub Media Gallery** from the extensions menu if you want the toolbar button to stay visible.
 7. Open any issue or pull request on `github.com`. Click an image, video, or the extension icon.
 
-After editing the source, return to the extensions page and click the extension's **Reload** button. Refresh the GitHub tab if it was already open before reloading the extension. You can also install the generated ZIP without publishing it: run `npm run package`, extract `dist/github-media-gallery-0.1.0.zip`, then choose the extracted directory with **Load unpacked**.
+After editing the source, return to the extensions page and click the extension's **Reload** button. Refresh the GitHub tab if it was already open before reloading the extension. You can also install the [latest release ZIP](https://github.com/jeroenpg/github-issue-pr-media-viewer/releases/latest/download/github-media-gallery-latest.zip) without publishing it: download and extract it, then choose the extracted directory with **Load unpacked**. For a local package, run `npm run package` and extract either ZIP in `dist/`.
 
 The default toolbar shortcut is **Alt+Shift+G**. Change it at `brave://extensions/shortcuts` or `chrome://extensions/shortcuts`.
 
@@ -99,4 +107,4 @@ npm run package
 
 The Playwright tests use an isolated Brave profile and controlled GitHub-shaped fixtures. They verify media discovery, click-to-open, keyboard navigation, video playback during DOM updates, filters, source scrolling, theme switching, resizing, and route changes. They do not post anything to GitHub. Set `BROWSER_PATH` to another Chromium-compatible browser when Brave is installed somewhere else.
 
-`npm run package` creates `dist/github-media-gallery-0.1.0.zip` containing the extension runtime, icons, screenshots, and this README.
+`npm run package` creates versioned and stable-name ZIPs in `dist/`. The release workflow publishes both as downloadable GitHub release assets whenever a `v*` tag is pushed.
