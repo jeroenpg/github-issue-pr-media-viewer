@@ -36,6 +36,10 @@ This is the gallery opened on the public test PR [`pingdotgg/t3code#13662`](http
 
 In both screenshots, the selected screenshot is the first item in the PR body. The **All media** count is visible, the second thumbnail is available for navigation, and the GitHub source is still visible behind the sidebar.
 
+## Test fixture issue
+
+Use [Test Issue #1](https://github.com/jeroenpg/github-issue-pr-media-viewer/issues/1) to try the extension. It contains lorem ipsum text, two screenshots in the issue body, and additional screenshots in comments so the **Comments only** and **This comment** filters can be tried safely.
+
 ## Install from source in Brave or Chrome
 
 1. Download or clone this folder. You need the directory containing `manifest.json`; no build step is required.
@@ -61,7 +65,7 @@ Install and verify the GitHub Media Gallery extension from https://github.com/je
 
 Clone the repository into a temporary working directory. Run `npm ci`, `npm run check`, `npm test`, and `npm run package`. Load the folder containing `manifest.json` into Brave or Chrome as an unpacked extension. If you can control the browser, use a fresh Chromium profile with `--disable-extensions-except=<repo-folder>` and `--load-extension=<repo-folder>`. Otherwise, tell me to open `brave://extensions` or `chrome://extensions`, enable Developer mode, click Load unpacked, and select the cloned folder.
 
-Verify it on https://github.com/pingdotgg/t3code/pull/13662: click a screenshot, press ArrowRight, try the Comments only filter, and confirm the gallery follows the GitHub light/dark theme while the conversation stays visible on the left. Report the absolute install folder, test results, and verification result. Do not publish the extension, modify GitHub content, post comments, or send messages.
+Report the absolute install folder and test results. Do not publish the extension, modify GitHub content, post comments, or send messages.
 ```
 
 ## Use it
