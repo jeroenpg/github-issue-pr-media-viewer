@@ -52,51 +52,16 @@ After editing the source, return to the extensions page and click the extension'
 
 The default toolbar shortcut is **Alt+Shift+G**. Change it at `brave://extensions/shortcuts` or `chrome://extensions/shortcuts`.
 
-## Install prompts for coding agents
+## Install prompt for any coding agent
 
-These prompts are designed to be pasted into an agent that can run shell commands and, when available, control a local browser. They install the extension from source; they do not publish it to a browser store.
-
-### Claude Code
+Paste this into Claude Code, Codex, OpenCode, or another coding agent:
 
 ```text
-Install the GitHub Media Gallery extension from https://github.com/jeroenpg/github-issue-pr-media-viewer.
+Install and verify the GitHub Media Gallery extension from https://github.com/jeroenpg/github-issue-pr-media-viewer.
 
-1. Clone it into a temporary working directory.
-2. Run `npm ci`, `npm run check`, and `npm test`.
-3. Run `npm run package` and confirm the ZIP was created.
-4. If you can control Brave or Chrome, launch a fresh browser profile with the unpacked repository loaded using the browser's extension-loading option (`--load-extension` / `--disable-extensions-except`). Otherwise, tell me to open brave://extensions or chrome://extensions, enable Developer mode, choose Load unpacked, and select the cloned folder.
-5. Open https://github.com/pingdotgg/t3code/pull/13662, click a screenshot, and verify the gallery opens on the clicked media.
-6. Report the installed folder, test results, and the browser tab where it was verified.
+Clone the repository into a temporary working directory. Run `npm ci`, `npm run check`, `npm test`, and `npm run package`. Load the folder containing `manifest.json` into Brave or Chrome as an unpacked extension. If you can control the browser, use a fresh Chromium profile with `--disable-extensions-except=<repo-folder>` and `--load-extension=<repo-folder>`. Otherwise, tell me to open `brave://extensions` or `chrome://extensions`, enable Developer mode, click Load unpacked, and select the cloned folder.
 
-Do not publish the extension, change GitHub content, or send any messages.
-```
-
-### Codex
-
-```text
-Set up GitHub Media Gallery locally from https://github.com/jeroenpg/github-issue-pr-media-viewer.
-
-Clone the repository, run `npm ci`, `npm run check`, `npm test`, and `npm run package`. Load the unpacked repository into Brave or Chrome if browser automation is available; use a fresh profile and the browser flags `--disable-extensions-except=<repo>` and `--load-extension=<repo>`. If browser automation is unavailable, give me the exact Load unpacked steps and the absolute folder path.
-
-Verify on https://github.com/pingdotgg/t3code/pull/13662: click an image, press ArrowRight, check Comments only, and confirm the gallery follows the GitHub light/dark theme. Do not publish it or modify GitHub.
-```
-
-### OpenCode
-
-```text
-Install and verify the local GitHub Media Gallery extension from https://github.com/jeroenpg/github-issue-pr-media-viewer.
-
-Use a temporary checkout. Run `npm ci`, `npm run check`, `npm test`, and `npm run package`. Prefer Brave; if it is unavailable, use Chrome or another Chromium browser. Load the repository as an unpacked extension with `--disable-extensions-except` and `--load-extension`, or explain how I can load it from brave://extensions or chrome://extensions.
-
-Verify the public PR https://github.com/pingdotgg/t3code/pull/13662 by opening a screenshot in the gallery, navigating with the arrow keys, and checking that the conversation remains visible to the left of the media sidebar. Keep all work local and do not publish, comment, or edit GitHub.
-```
-
-### Generic prompt
-
-```text
-Install the unpacked Chrome extension at https://github.com/jeroenpg/github-issue-pr-media-viewer.
-
-Clone the repository, run `npm ci`, `npm run check`, `npm test`, and `npm run package`. Load the repository folder containing manifest.json into Brave or Chrome with Developer mode > Load unpacked, or launch a fresh Chromium profile with `--disable-extensions-except=<repo>` and `--load-extension=<repo>`. Verify it on a GitHub issue or pull request by clicking an image and using the arrow keys. Do not publish the extension or modify GitHub content. Report the folder path and verification result.
+Verify it on https://github.com/pingdotgg/t3code/pull/13662: click a screenshot, press ArrowRight, try the Comments only filter, and confirm the gallery follows the GitHub light/dark theme while the conversation stays visible on the left. Report the absolute install folder, test results, and verification result. Do not publish the extension, modify GitHub content, post comments, or send messages.
 ```
 
 ## Use it
