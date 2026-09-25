@@ -9,6 +9,16 @@
   try { url = new URL(params.get('src')); } catch { post('error'); return; }
   if (url.protocol !== 'https:') { post('error'); return; }
   let resolved = false;
+  // Start playing when the gallery lands on a video. Opening or moving to it is a user gesture, so sound is
+  // usually allowed; if the browser's autoplay policy still refuses, fall back to muted playback.
+  const play = (source) => {
+    video.src = source;
+    video.play().catch((error) => {
+      if (error.name !== 'NotAllowedError') return;
+      video.muted = true;
+      video.play().catch(() => {});
+    });
+  };
   // Matching the gallery's color scheme keeps the frame transparent instead of painting a white backdrop.
   document.documentElement.style.colorScheme = params.get('theme') === 'dark' ? 'dark' : 'light';
   video.setAttribute('aria-label', params.get('label') || 'Video');
@@ -19,7 +29,7 @@
       resolved = true;
       try {
         const result = await chrome.runtime.sendMessage({ type: 'resolve-media', url: url.href });
-        if (result?.ok && result.url !== url.href) { video.src = result.url; return; }
+        if (result?.ok && result.url !== url.href) { play(result.url); return; }
       } catch {}
     }
     post('error');
@@ -27,5 +37,5 @@
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') post('close');
   });
-  video.src = url.href;
+  play(url.href);
 })();

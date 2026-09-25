@@ -129,7 +129,6 @@ test('video playback survives unrelated DOM updates and keeps native keyboard co
   await position(page, '4 / 5');
   const frame = page.locator('#ghmg-root .media iframe');
   const media = page.frameLocator('#ghmg-root .media iframe').locator('video');
-  await media.evaluate(async (video) => { video.muted = true; await video.play(); });
   await media.evaluate((video) => new Promise((done) => video.currentTime > 0 ? done() : video.addEventListener('timeupdate', done, { once: true })));
   await frame.evaluate((element) => { element.dataset.testIdentity = 'playing'; });
   await page.evaluate(() => document.querySelector('main').append(document.createElement('div')));
@@ -190,7 +189,6 @@ test('release-download videos play under GitHub CSP, which blocks release-assets
     await position(page, '1 / 1');
     const player = page.frameLocator('#ghmg-root .media iframe').locator('video');
     await player.evaluate((element) => new Promise((done, fail) => element.readyState ? done() : (element.addEventListener('loadedmetadata', done, { once: true }), setTimeout(() => fail(new Error(`no metadata: ${element.currentSrc}`)), 8000))));
-    await player.evaluate(async (element) => { element.muted = true; await element.play(); });
     await player.evaluate((element) => new Promise((done) => element.currentTime > 0 ? done() : element.addEventListener('timeupdate', done, { once: true })));
     assert.match(await player.evaluate((element) => element.currentSrc), /release-assets\.githubusercontent\.com|releases\/download/, repository);
     await page.waitForFunction(() => document.querySelector('#ghmg-root').shadowRoot.querySelector('.media-message').hidden);

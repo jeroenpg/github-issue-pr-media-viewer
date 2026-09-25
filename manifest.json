@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GitHub Media Gallery",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Review screenshots and videos in GitHub issues and pull requests without losing their surrounding conversation.",
   "permissions": [
     "activeTab",

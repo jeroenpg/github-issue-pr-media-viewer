@@ -16,7 +16,7 @@ It is a build-free Manifest V3 extension for Chrome-based browsers. Brave uses t
 - Keeps the issue or PR conversation visible on the left and scrolls it to the active media as you navigate.
 - Supports **← / →**, previous/next buttons, thumbnails, wrapping navigation, and **Esc** to close.
 - Filters **All media**, **Comments only**, and **This comment** (or **This body** when the selected asset is in the issue/PR description). The source dropdown can select a different comment.
-- Plays supported videos in the sidebar, with native controls and keyboard behavior, including `releases/download/…mp4` links that GitHub itself cannot embed (see below).
+- Plays supported videos in the sidebar as soon as you open or move to them (muted only if the browser blocks sound), with native controls and keyboard behavior, including `releases/download/…mp4` links that GitHub itself cannot embed (see below).
 - Provides **Fit**, **Original**, and **Download** actions.
 - Resizes from the divider, including with the divider's keyboard arrow controls.
 - Follows GitHub's light, dark, dimmed, and automatic color modes.
