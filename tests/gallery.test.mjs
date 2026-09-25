@@ -1,6 +1,8 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, mkdtemp, rm } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { createServer } from 'node:https';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
@@ -12,13 +14,37 @@ const video = await readFile(new URL('./fixtures/sample.webm', import.meta.url))
 const root = resolve(import.meta.dirname, '..');
 const browserPath = process.env.BROWSER_PATH || (existsSync('/usr/bin/brave-browser') ? '/usr/bin/brave-browser' : chromium.executablePath());
 const model = await readFile(resolve(root, 'media-model.js'), 'utf8');
+
+// GitHub stand-in for the requests tests do not route: release downloads redirect to a signed
+// release-assets URL, and private-repository downloads 404 without the session cookie.
+const certs = await mkdtemp(`${tmpdir()}/ghmg-cert-`);
+execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1', '-subj', '/CN=github.com', '-addext', 'subjectAltName=DNS:github.com,DNS:release-assets.githubusercontent.com', '-keyout', `${certs}/key.pem`, '-out', `${certs}/cert.pem`], { stdio: 'ignore' });
+const assets = createServer({ key: await readFile(`${certs}/key.pem`), cert: await readFile(`${certs}/cert.pem`) }, (request, response) => {
+  const url = new URL(request.url, `https://${request.headers.host}`);
+  if (url.hostname === 'github.com' && url.pathname.includes('/releases/download/')) {
+    if (url.pathname.startsWith('/private/') && !/user_session=signed-in/.test(request.headers.cookie || '')) return response.writeHead(404).end();
+    return response.writeHead(302, { location: `https://release-assets.githubusercontent.com/signed${url.pathname}?sig=test` }).end();
+  }
+  if (url.hostname === 'release-assets.githubusercontent.com' && url.pathname.startsWith('/signed/')) {
+    const [start, end = video.length - 1] = (/bytes=(\d+)-(\d*)/.exec(request.headers.range || '') || []).slice(1).map((value) => value && Number(value));
+    const headers = { 'content-type': 'application/octet-stream', 'content-disposition': 'attachment; filename=clip.mp4', 'accept-ranges': 'bytes' };
+    if (start === undefined) return response.writeHead(200, { ...headers, 'content-length': video.length }).end(video);
+    const last = Math.min(end || video.length - 1, video.length - 1);
+    return response.writeHead(206, { ...headers, 'content-range': `bytes ${start}-${last}/${video.length}`, 'content-length': last - start + 1 }).end(video.subarray(start, last + 1));
+  }
+  response.writeHead(404).end();
+});
+await new Promise((ready) => assets.listen(0, '127.0.0.1', ready));
 before(async () => {
   profile = await mkdtemp(`${tmpdir()}/ghmg-test-`);
   context = await chromium.launchPersistentContext(profile, {
     executablePath: browserPath,
     headless: true,
     viewport: { width: 1440, height: 1000 },
-    args: [`--disable-extensions-except=${root}`, `--load-extension=${root}`],
+    args: [
+      `--disable-extensions-except=${root}`, `--load-extension=${root}`, '--ignore-certificate-errors',
+      `--host-resolver-rules=MAP github.com 127.0.0.1:${assets.address().port}, MAP release-assets.githubusercontent.com 127.0.0.1:${assets.address().port}`,
+    ],
   });
   await context.route('https://github.com/assets/**', (route) => {
     if (route.request().url().endsWith('.webm')) return route.fulfill({ contentType: 'video/webm', body: video });
@@ -27,7 +53,9 @@ before(async () => {
 });
 after(async () => {
   await context?.close();
+  assets.close();
   await rm(profile, { recursive: true, force: true });
+  await rm(certs, { recursive: true, force: true });
 });
 async function pageFor(html = fixture, path = '/test/gallery/pull/42') {
   const page = await context.newPage();
@@ -86,7 +114,7 @@ test('installed extension: click, keyboard, page layout, filters, resizing, them
   await page.evaluate(() => { document.documentElement.dataset.colorMode = 'dark'; });
   await page.waitForFunction(() => document.querySelector('#ghmg-root').dataset.theme === 'dark');
   assert.equal(await page.locator('#ghmg-root .panel').evaluate((el) => getComputedStyle(el).backgroundColor), 'rgb(13, 17, 23)');
-  assert.equal(await page.locator('#ghmg-root .media-column').evaluate((el) => getComputedStyle(el).backgroundColor), 'rgb(21, 27, 35)');
+  assert.equal(await page.locator('#ghmg-root .viewer').evaluate((el) => getComputedStyle(el).backgroundColor), 'rgb(21, 27, 35)');
   await page.getByRole('button', { name: 'Close gallery', exact: true }).click();
   assert.equal(await page.locator('#ghmg-root').isVisible(), false);
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains('ghmg-open')), false);
@@ -99,19 +127,21 @@ test('video playback survives unrelated DOM updates and keeps native keyboard co
   const page = await pageFor();
   await page.locator('.markdown-body video').click();
   await position(page, '4 / 5');
-  const media = page.locator('#ghmg-root video');
+  const frame = page.locator('#ghmg-root .media iframe');
+  const media = page.frameLocator('#ghmg-root .media iframe').locator('video');
   await media.evaluate(async (video) => { video.muted = true; await video.play(); });
-  await page.waitForFunction(() => document.querySelector('#ghmg-root').shadowRoot.querySelector('video').currentTime > 0);
-  await media.evaluate((video) => { video.dataset.testIdentity = 'playing'; });
+  await media.evaluate((video) => new Promise((done) => video.currentTime > 0 ? done() : video.addEventListener('timeupdate', done, { once: true })));
+  await frame.evaluate((element) => { element.dataset.testIdentity = 'playing'; });
   await page.evaluate(() => document.querySelector('main').append(document.createElement('div')));
-  await page.waitForTimeout(400); // Debounced DOM rescan must not replace the playing node.
-  assert.equal(await media.getAttribute('data-test-identity'), 'playing');
+  await page.waitForTimeout(400); // Debounced DOM rescan must not replace the playing player.
+  assert.equal(await frame.getAttribute('data-test-identity'), 'playing');
+  assert.equal(await media.evaluate((video) => video.paused), false);
   await media.focus();
   await page.keyboard.press('ArrowLeft');
   await position(page, '4 / 5');
   await page.getByRole('button', { name: 'Next media', exact: true }).click();
   await position(page, '5 / 5');
-  assert.equal(await media.count(), 0, 'navigation removes the previous video');
+  assert.equal(await frame.count(), 0, 'navigation removes the previous video');
   await page.close();
 });
 
@@ -145,4 +175,25 @@ test('modern issue markup: nested markdown, body authors, comment IDs, and repea
   assert.equal(items[2].type, 'video');
   assert.equal(await page.evaluate(`${model}\nGitHubGalleryModel.safeUrl('javascript:alert(1)')`), '');
   await page.close();
+});
+
+test('release-download videos play under GitHub CSP, which blocks release-assets in media-src', async () => {
+  const csp = (await readFile(new URL('./fixtures/github-csp.txt', import.meta.url), 'utf8')).trim();
+  await context.addCookies([{ name: 'user_session', value: 'signed-in', domain: 'github.com', path: '/', secure: true, httpOnly: true, sameSite: 'Lax' }]);
+  for (const repository of ['public/gallery', 'private/gallery']) {
+    const release = `https://github.com/${repository}/releases/download/pr-assets/clip.mp4`;
+    const page = await context.newPage();
+    const html = `<main><div class="js-comment timeline-comment-group" id="issuecomment-7"><a class="author" href="/agent">agent</a><a class="js-timestamp" href="#issuecomment-7">Today</a><div class="markdown-body js-comment-body"><p>Recording:</p><p><a href="${release}">${release}</a></p></div></div></main>`;
+    await page.route(`https://github.com/${repository}/pull/43`, (route) => route.fulfill({ contentType: 'text/html', headers: { 'content-security-policy': csp }, body: html }));
+    await page.goto(`https://github.com/${repository}/pull/43`);
+    await page.locator(`.markdown-body a[href="${release}"]`).click();
+    await position(page, '1 / 1');
+    const player = page.frameLocator('#ghmg-root .media iframe').locator('video');
+    await player.evaluate((element) => new Promise((done, fail) => element.readyState ? done() : (element.addEventListener('loadedmetadata', done, { once: true }), setTimeout(() => fail(new Error(`no metadata: ${element.currentSrc}`)), 8000))));
+    await player.evaluate(async (element) => { element.muted = true; await element.play(); });
+    await player.evaluate((element) => new Promise((done) => element.currentTime > 0 ? done() : element.addEventListener('timeupdate', done, { once: true })));
+    assert.match(await player.evaluate((element) => element.currentSrc), /release-assets\.githubusercontent\.com|releases\/download/, repository);
+    await page.waitForFunction(() => document.querySelector('#ghmg-root').shadowRoot.querySelector('.media-message').hidden);
+    await page.close();
+  }
 });

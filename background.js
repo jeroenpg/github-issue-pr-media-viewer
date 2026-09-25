@@ -23,3 +23,17 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
   );
   return true;
 });
+
+chrome.runtime.onMessage.addListener((message, sender, respond) => {
+  if (message?.type !== 'resolve-media' || sender.id !== chrome.runtime.id || !sender.url?.startsWith(chrome.runtime.getURL('player.html'))) return;
+  let url;
+  try { url = new URL(message.url); } catch { respond({ ok: false }); return; }
+  if (url.protocol !== 'https:' || url.hostname !== 'github.com') { respond({ ok: false }); return; }
+  // Follow GitHub's redirect with the user's session and hand back the signed, cookie-free asset URL.
+  const abort = new AbortController();
+  fetch(url.href, { credentials: 'include', headers: { Range: 'bytes=0-0' }, signal: abort.signal }).then(
+    (response) => { abort.abort(); respond({ ok: response.ok, url: response.url }); },
+    () => respond({ ok: false }),
+  );
+  return true;
+});

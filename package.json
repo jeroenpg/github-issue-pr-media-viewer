@@ -1,10 +1,10 @@
 {
   "name": "github-media-gallery",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "A build-free Chrome and Brave extension for GitHub media review.",
   "scripts": {
-    "check": "node --check background.js && node --check media-model.js && node --check content.js",
+    "check": "node --check background.js && node --check media-model.js && node --check content.js && node --check player.js",
     "test": "node --test tests/*.test.mjs",
     "package": "python3 scripts/package.py"
   },

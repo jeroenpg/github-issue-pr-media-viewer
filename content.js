@@ -40,31 +40,27 @@
     panel.innerHTML = `
       <div class="resize" role="separator" tabindex="0" aria-label="Resize conversation" aria-orientation="vertical" aria-valuemin="28" aria-valuemax="65" aria-valuenow="44"></div>
       <header>
-        <div class="brand">${icon('gallery')}<div><h2>Media gallery</h2><p class="repo"></p></div></div>
-        <button class="icon-button" data-action="close" title="Close gallery (Esc)" aria-label="Close gallery">${icon('close')}</button>
-      </header>
-      <div class="filters">
         <div class="tabs" role="group" aria-label="Filter media">
           <button data-filter="all" aria-pressed="true">All media <span class="total"></span></button>
           <button data-filter="comments" aria-pressed="false">Comments only</button>
           <button data-filter="source" aria-pressed="false" title="Only media from the current body or comment">This comment</button>
         </div>
         <select aria-label="Choose a comment" class="source-select"><option value="">Choose a comment…</option></select>
-      </div>
+        <span class="repo"></span>
+        <button class="icon-button" data-action="close" title="Close gallery (Esc)" aria-label="Close gallery">${icon('close')}</button>
+      </header>
       <div class="viewer">
-        <div class="media-column">
-          <div class="asset-bar"><span class="kind">IMAGE</span><span class="filename"></span><button class="text-button fit" data-action="zoom" title="Toggle original image size">Fit</button></div>
-          <div class="stage" tabindex="0" aria-label="Selected media"><div class="media"></div><div class="media-message" role="status"></div></div>
-          <div class="navigation"><button class="location-button" data-action="locate" title="Show in conversation"></button>
-            <button class="icon-button" data-action="previous" title="Previous media (←)" aria-label="Previous media">${icon('left')}</button>
-            <div class="position" role="status" aria-live="polite"></div>
-            <button class="icon-button" data-action="next" title="Next media (→)" aria-label="Next media">${icon('right')}</button>
-          </div>
-        </div>
+        <div class="stage" tabindex="0" aria-label="Selected media"><div class="media"></div><div class="media-message" role="status"></div></div>
+        <div class="caption"><span class="kind">IMAGE</span><span class="filename"></span><span class="separator" aria-hidden="true">·</span><button class="location-button" data-action="locate" title="Show in conversation"></button></div>
+        <button class="text-button fit" data-action="zoom" title="Toggle original image size">Fit</button>
       </div>
       <div class="empty" hidden>${icon('gallery')}<h3>No media here</h3><p></p><button class="button" data-filter="all">Show all media</button></div>
       <div class="thumbnails" aria-label="Media thumbnails"></div>
-      <footer><span class="keyboard"><kbd>←</kbd><kbd>→</kbd> browse <span>·</span> <kbd>esc</kbd> close</span><div class="footer-actions"><a class="open-original" target="_blank" rel="noopener noreferrer" title="Open original media">${icon('external')} Original</a><button class="button" data-action="download">${icon('download')} Download</button></div></footer>
+      <footer><div class="navigation">
+          <button class="icon-button" data-action="previous" title="Previous media (←)" aria-label="Previous media">${icon('left')}</button>
+          <div class="position" role="status" aria-live="polite"></div>
+          <button class="icon-button" data-action="next" title="Next media (→)" aria-label="Next media">${icon('right')}</button>
+        </div><span class="keyboard"><kbd>←</kbd><kbd>→</kbd> browse <span>·</span> <kbd>esc</kbd> close</span><div class="footer-actions"><a class="open-original" target="_blank" rel="noopener noreferrer" title="Open original media">${icon('external')} Original</a><button class="button" data-action="download">${icon('download')} Download</button></div></footer>
       <div class="toast" role="status" hidden></div>`;
     ui.append(panel);
     document.documentElement.append(host);
@@ -154,9 +150,7 @@
 
   function render() {
     const item = current();
-    const oldVideo = $('.media video');
-    if (oldVideo) oldVideo.pause();
-    $('.repo').textContent = `${location.pathname.split('/').slice(1, 3).join(' / ')}  ·  #${state.path.split('/').pop()}`;
+    $('.repo').textContent = `${location.pathname.split('/').slice(1, 3).join('/')} · #${state.path.split('/').pop()}`;
     $('.total').textContent = state.all.length;
     ui.querySelectorAll('.tabs button').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.filter === state.filter)));
     const sourceButton = $('[data-filter="source"]');
@@ -186,24 +180,26 @@
     $('.stage').classList.remove('zoomed');
     $('.location-button').textContent = `${item.source.label}${item.source.author ? ` · @${item.source.author}` : ''}`;
     $('.open-original').href = item.url;
-    const media = document.createElement(item.type === 'video' ? 'video' : 'img');
-    if (item.type === 'video') {
-      media.controls = true;
-      media.playsInline = true;
-      media.preload = 'metadata';
-      media.setAttribute('aria-label', item.caption || item.filename);
-    } else media.alt = item.caption || item.filename;
+    const label = item.caption || item.filename;
     const message = $('.media-message');
     message.textContent = 'Loading media…';
     message.hidden = false;
-    const ready = () => { if (media.isConnected) message.hidden = true; };
-    media.addEventListener(item.type === 'video' ? 'loadedmetadata' : 'load', ready);
-    media.addEventListener('error', () => {
-      if (media.isConnected) { message.textContent = 'Unable to display this file. Try opening the original.'; message.hidden = false; }
-    });
-    media.src = item.url;
+    let media;
+    if (item.type === 'video') {
+      // GitHub's CSP blocks in-page video from release downloads; the extension player is exempt.
+      media = document.createElement('iframe');
+      media.src = `${chrome.runtime.getURL('player.html')}#${new URLSearchParams({ src: item.url, label, theme: host.dataset.theme })}`;
+      media.title = label;
+      media.allow = 'autoplay; fullscreen';
+    } else {
+      media = document.createElement('img');
+      media.alt = label;
+      media.addEventListener('load', () => mediaStatus(media, 'ready'));
+      media.addEventListener('error', () => mediaStatus(media, 'error'));
+      media.src = item.url;
+    }
     $('.media').replaceChildren(media);
-    if (media.complete && media.naturalWidth) ready();
+    if (media.complete && media.naturalWidth) mediaStatus(media, 'ready');
     const index = state.items.indexOf(item);
     $('.position').textContent = `${index + 1} / ${state.items.length}`;
     $('[data-action="previous"]').disabled = state.items.length < 2;
@@ -233,6 +229,13 @@
     }));
     const activeThumb = thumbnails.querySelector('[aria-current="true"]');
     if (activeThumb) thumbnails.scrollLeft = activeThumb.offsetLeft - thumbnails.clientWidth / 2 + activeThumb.clientWidth / 2;
+  }
+
+  function mediaStatus(media, status) {
+    if (!media.isConnected) return;
+    const message = $('.media-message');
+    message.textContent = 'Unable to display this file. Try opening the original.';
+    message.hidden = status === 'ready';
   }
 
   function reveal(item) {
@@ -277,7 +280,6 @@
   function close() {
     if (!state.open) return;
     state.open = false;
-    $('.media video')?.pause();
     $('.media').replaceChildren();
     host.hidden = true;
     marked?.classList.remove('ghmg-selected');
@@ -308,6 +310,12 @@
       move(event.key === 'ArrowRight' ? 1 : -1);
     }
   }, true);
+  window.addEventListener('message', (event) => {
+    const frame = ui && $('.media iframe');
+    if (!frame || event.source !== frame.contentWindow || event.data?.source !== 'ghmg-player') return;
+    if (event.data.type === 'close') close();
+    else mediaStatus(frame, event.data.type);
+  });
   chrome.runtime.onMessage.addListener((message) => {
     if (message?.type === 'toggle-gallery') state.open ? close() : open();
   });
@@ -325,7 +333,7 @@
     const changed = fingerprint(all) !== fingerprint(state.all);
     state.all = all;
     filterItems();
-    // Keep the active <video> intact across GitHub's background DOM updates.
+    // Keep the active video player intact across GitHub's background DOM updates.
     if (changed) render();
   }
   const observer = new MutationObserver((records) => {

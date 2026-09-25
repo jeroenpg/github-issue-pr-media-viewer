@@ -12,15 +12,19 @@ It is a build-free Manifest V3 extension for Chrome-based browsers. Brave uses t
 
 - Opens at the image or video you clicked, without navigating away from GitHub.
 - Finds screenshots, release-download assets, user attachments, direct media links, and native GitHub video elements in loaded issue and PR content.
-- Shows the selected image or video in a fixed sidebar that covers GitHub's metadata sidebar and uses the remaining window width.
+- Shows the selected image or video in a fixed sidebar that covers GitHub's metadata sidebar and uses the remaining window width. Filters sit in a single compact header, and the media type, caption, and source are overlaid on the media, so the image gets almost the full height.
 - Keeps the issue or PR conversation visible on the left and scrolls it to the active media as you navigate.
 - Supports **← / →**, previous/next buttons, thumbnails, wrapping navigation, and **Esc** to close.
 - Filters **All media**, **Comments only**, and **This comment** (or **This body** when the selected asset is in the issue/PR description). The source dropdown can select a different comment.
-- Plays supported videos in the sidebar, with native controls and keyboard behavior.
+- Plays supported videos in the sidebar, with native controls and keyboard behavior, including `releases/download/…mp4` links that GitHub itself cannot embed (see below).
 - Provides **Fit**, **Original**, and **Download** actions.
 - Resizes from the divider, including with the divider's keyboard arrow controls.
 - Follows GitHub's light, dark, dimmed, and automatic color modes.
 - Does not post comments, call a backend, collect analytics, or upload media. Files remain on their original GitHub or external host.
+
+### Why videos play in an extension frame
+
+GitHub's page Content Security Policy limits `media-src` to a few hosts and leaves out `release-assets.githubusercontent.com`, which is where every `releases/download/…` link redirects. A `<video>` element placed in the GitHub page therefore cannot play release-hosted recordings; they fail with “Unable to display this file”. The gallery plays videos in its own `player.html` frame instead, which the page policy does not govern. For private repositories, when the frame cannot reach the asset directly, the extension's background worker follows GitHub's redirect with your existing GitHub session and plays the signed asset URL. This is why the extension asks for access to `github.com` and `*.githubusercontent.com`. Nothing is sent anywhere else.
 
 The gallery indexes media GitHub has loaded. If a comment is collapsed or GitHub has not loaded older comments yet, expand or load it and the extension will rescan automatically.
 
@@ -94,7 +98,8 @@ Runtime files are plain JavaScript and CSS. There is no bundler and no remote co
 - `content.js` owns scanning, filters, navigation, scrolling, video playback, and the sidebar UI.
 - `content.css` adjusts the GitHub page split while the gallery is open.
 - `gallery.css` styles the shadow-root UI and follows GitHub's light/dark tokens.
-- `background.js` handles the toolbar action and browser downloads.
+- `player.html` / `player.js` play videos inside an extension page.
+- `background.js` handles the toolbar action, browser downloads, and resolving private release videos.
 
 Run the checks locally:
 
@@ -105,6 +110,6 @@ npm test
 npm run package
 ```
 
-The Playwright tests use an isolated Brave profile and controlled GitHub-shaped fixtures. They verify media discovery, click-to-open, keyboard navigation, video playback during DOM updates, filters, source scrolling, theme switching, resizing, and route changes. They do not post anything to GitHub. Set `BROWSER_PATH` to another Chromium-compatible browser when Brave is installed somewhere else.
+The Playwright tests use an isolated Brave profile and controlled GitHub-shaped fixtures. They verify media discovery, click-to-open, keyboard navigation, video playback during DOM updates, release-download videos under GitHub's real CSP (public and private, through a local HTTPS stand-in for GitHub's redirect), filters, source scrolling, theme switching, resizing, and route changes. They do not post anything to GitHub. Set `BROWSER_PATH` to another Chromium-compatible browser when Brave is installed somewhere else.
 
 `npm run package` creates versioned and stable-name ZIPs in `dist/`. The release workflow publishes both as downloadable GitHub release assets whenever a `v*` tag is pushed.

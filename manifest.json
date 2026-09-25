@@ -1,12 +1,16 @@
 {
   "manifest_version": 3,
   "name": "GitHub Media Gallery",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Review screenshots and videos in GitHub issues and pull requests without losing their surrounding conversation.",
   "permissions": [
     "activeTab",
     "scripting",
     "downloads"
+  ],
+  "host_permissions": [
+    "https://github.com/*",
+    "https://*.githubusercontent.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -38,7 +42,9 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "gallery.css"
+        "gallery.css",
+        "player.html",
+        "player.js"
       ],
       "matches": [
         "https://github.com/*"
