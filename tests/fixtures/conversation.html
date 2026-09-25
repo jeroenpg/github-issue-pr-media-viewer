@@ -1,0 +1,19 @@
+<!doctype html>
+<html data-color-mode="light" data-light-theme="light" data-dark-theme="dark">
+<head><meta charset="utf-8"><title>Gallery test conversation</title><style>
+:root { --bgColor-default: #ffffff; --bgColor-muted: #f6f8fa; --fgColor-default: #1f2328; --fgColor-muted: #656d76; --borderColor-default: #d1d9e0; --fgColor-accent: #0969da; }
+:root[data-color-mode=dark] { --bgColor-default: #0d1117; --bgColor-muted: #151b23; --fgColor-default: #f0f6fc; --fgColor-muted: #9198a1; --borderColor-default: #3d444d; --fgColor-accent: #4493f8; }
+* { box-sizing: border-box; } body { margin:0; background:var(--bgColor-default); color:var(--fgColor-default); font:14px sans-serif; } main { padding:16px; } .columns { display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:24px; } .js-comment { margin-bottom:28px; border:1px solid var(--borderColor-default); padding:16px; } .markdown-body img, video { width:300px; max-width:100%; } .markdown-body p { margin:24px 0; } .space { height:450px; } a { color:var(--fgColor-accent); }
+</style></head><body><main class="repository-content">
+<h1>A GitHub media test conversation</h1><div class="columns"><section>
+<div class="js-command-palette-pull-body"><article id="pullrequest-42" class="js-comment timeline-comment-group">
+<a class="author" href="/writer">writer</a><a class="js-timestamp" href="#issue-42">Today</a>
+<div class="markdown-body js-comment-body"><h2>Before and after</h2><p>The screenshot context is on the page.</p>
+<table><tr><th>Before</th><th>After</th></tr><tr><td><a href="https://github.com/assets/before.png"><img alt="Before" src="https://github.com/assets/before.png"></a></td><td><a href="https://github.com/assets/after.png"><img alt="After" src="https://github.com/assets/after.png"></a></td></tr></table>
+<p>Text below the screenshots.</p><img class="emoji" width="20" height="20" src="https://github.com/assets/emoji.png"><img width="120" height="20" src="https://github.com/assets/badge.png"></div></article></div>
+<div class="space"></div>
+<article class="js-comment timeline-comment-group" id="issuecomment-1"><a class="author" href="/reviewer">reviewer</a><a class="js-timestamp" href="#issuecomment-1">Today</a><div class="markdown-body js-comment-body"><p>First comment has a screenshot and video.</p><img alt="Comment screenshot" src="https://github.com/assets/shared.png"><video controls><source src="https://github.com/assets/sample.webm" type="video/webm"></video></div></article>
+<div class="space"></div>
+<article class="js-comment timeline-comment-group" id="issuecomment-2"><a class="author" href="/another">another</a><a class="js-timestamp" href="#issuecomment-2">Today</a><div class="markdown-body js-comment-body"><p>The same screenshot in a different comment keeps its own source.</p><img alt="Repeated screenshot" src="https://github.com/assets/shared.png"></div></article>
+<textarea aria-label="Write a comment">draft comment</textarea><div class="preview-content"><div class="markdown-body"><img src="https://github.com/assets/preview.png"></div></div>
+</section><aside id="pr-conversation-sidebar">Reviewers, labels, and metadata</aside></div></main></body></html>

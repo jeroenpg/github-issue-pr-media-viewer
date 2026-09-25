@@ -1,0 +1,90 @@
+/* Inherit GitHub's design tokens, including dimmed and high-contrast themes. */
+:host {
+  --bg: var(--bgColor-default, var(--color-canvas-default, #fff));
+  --soft: var(--bgColor-muted, var(--color-canvas-subtle, #f6f8fa));
+  --fg: var(--fgColor-default, var(--color-fg-default, #1f2328));
+  --muted: var(--fgColor-muted, var(--color-fg-muted, #656d76));
+  --line: var(--borderColor-default, var(--color-border-default, #d1d9e0));
+  --blue: var(--fgColor-accent, var(--color-accent-fg, #0969da));
+  --badge-bg: var(--bgColor-accent-muted, var(--color-accent-subtle, #ddf4ff));
+  --hover: var(--button-default-bgColor-hover, var(--color-btn-hover-bg, #eef1f4));
+  --shadow: #0000001c;
+  color: var(--fg);
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+:host([data-theme="dark"]) { color-scheme: dark; --shadow: #0006; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button,select,a { -webkit-tap-highlight-color: transparent; }
+button,select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; opacity: .4; }
+button:focus-visible, a:focus-visible, select:focus-visible, .resize:focus-visible, .stage:focus-visible { outline: 2px solid #2f81f7; outline-offset: -2px; }
+button svg,a svg { flex-shrink: 0; }
+.panel { height: 100dvh; display: flex; flex-direction: column; background: var(--bg); border-left: 1px solid var(--line); box-shadow: -12px 0 40px var(--shadow); container-type: inline-size; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 22px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.brand > svg { color: var(--blue); width: 22px; height: 22px; flex-shrink: 0; }
+h2 { margin: 0; font-size: 16px; font-weight: 650; letter-spacing: -.3px; }
+.repo { margin: 1px 0 0; color: var(--muted); font-size: 11px; }
+.icon-button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 6px; flex-shrink: 0; }
+.icon-button:hover:enabled { color: var(--fg); background: var(--soft); border-color: var(--line); }
+.filters { display: flex; align-items: center; padding: 12px 20px; gap: 10px; flex-shrink: 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tabs { display: flex; gap: 4px; }
+.tabs button { font-size: 12px; font-weight: 550; white-space: nowrap; border: 1px solid transparent; color: var(--muted); background: transparent; padding: 6px 9px; border-radius: 6px; }
+.tabs button:hover:enabled { background: var(--soft); }
+.tabs button[aria-pressed="true"] { color: var(--blue); background: var(--badge-bg); }
+.total { border-radius: 10px; padding: 0 5px; font-size: 10px; background: color-mix(in srgb, var(--blue) 12%, transparent); margin-left: 3px; }
+.source-select { height: 28px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 5px; max-width: 210px; font-size: 11px; }
+.viewer { display: grid; grid-template-columns: minmax(0, 1fr); flex: 1; min-height: 0; }
+.media-column { min-height: 0; min-width: 0; display: flex; flex-direction: column; background: var(--soft); }
+.asset-bar { display: flex; align-items: center; gap: 8px; padding: 13px 16px; flex-shrink: 0; color: var(--muted); border-bottom: 1px solid var(--line); min-width: 0; }
+.kind { font-size: 9px; font-weight: 650; letter-spacing: .7px; color: var(--muted); padding: 2px 5px; border: 1px solid var(--line); border-radius: 3px; }
+.filename { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.text-button { color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; font-size: 10px; padding: 2px 7px; }
+.stage { flex: 1; min-height: 0; position: relative; overflow: auto; display: flex; }
+.media { min-width: 0; flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.media > img,.media > video { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 3px; box-shadow: 0 4px 24px #0003; }
+.media > video { width: 100%; }
+.stage.zoomed .media { display: block; padding: 16px; }
+.stage.zoomed img { max-width: none; max-height: none; }
+.media-message { position: absolute; inset: 0; padding: 30px; display: grid; place-items: center; text-align: center; color: var(--muted); pointer-events: none; background: var(--soft); }
+.navigation { display: flex; justify-content: center; align-items: center; gap: 24px; flex-shrink: 0; height: 51px; padding: 8px 12px; border-top: 1px solid var(--line); color: var(--muted); }
+.navigation .icon-button { color: var(--muted); }
+.navigation .icon-button:hover:enabled { background: var(--hover); color: var(--fg); border-color: var(--line); }
+.position { font-size: 12px; font-variant-numeric: tabular-nums; min-width: 42px; text-align: center; }
+.thumbnails { display: flex; padding: 12px 20px; gap: 10px; overflow-x: auto; flex-shrink: 0; min-height: 76px; border-top: 1px solid var(--line); background: var(--soft); }
+.thumbnails button { position: relative; display: grid; place-items: center; width: 70px; height: 50px; flex-shrink: 0; border: 2px solid transparent; border-radius: 5px; background: var(--bg); padding: 3px; opacity: .7; color: var(--muted); }
+.thumbnails button[aria-current="true"] { border-color: #2f81f7; opacity: 1; box-shadow: 0 0 0 2px #2f81f71a; }
+.thumbnails button:hover { opacity: 1; }
+.thumbnails img { width: 100%; height: 100%; object-fit: contain; min-height: 0; }
+.thumbnails small { position: absolute; bottom: 1px; right: 3px; color: white; background: #10151dcc; font-size: 9px; padding: 0 3px; border-radius: 2px; }
+footer { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 20px; flex-shrink: 0; border-top: 1px solid var(--line); }
+.keyboard { display: flex; gap: 4px; align-items: center; font-size: 10px; color: var(--muted); }
+.keyboard > span { padding: 0 4px; }
+kbd { font-family: inherit; font-size: 10px; line-height: 1.5; background: var(--soft); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; }
+.footer-actions { display: flex; align-items: center; gap: 14px; }
+.open-original { color: var(--muted); text-decoration: none; display: flex; gap: 5px; align-items: center; font-size: 11px; }
+.open-original svg { width: 13px; }
+.button { display: flex; gap: 6px; align-items: center; padding: 6px 10px; border-radius: 6px; background: var(--soft); color: var(--fg); border: 1px solid var(--line); font-size: 11px; font-weight: 550; box-shadow: 0 1px 0 #1f232808; }
+.button:hover:enabled { background: var(--hover); }
+.button svg { width: 14px; height: 14px; }
+.empty { flex: 1; min-height: 0; overflow: auto; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; padding: 40px; text-align: center; }
+.empty > svg { width: 40px; height: 40px; color: #8c959f; }
+.empty h3 { margin: 0; font-size: 17px; }
+.empty p { color: var(--muted); max-width: 300px; margin: 0 0 8px; }
+.toast { position: absolute; bottom: 72px; left: 20px; right: 20px; border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; background: var(--bg); color: var(--fg); box-shadow: 0 4px 20px #0002; }
+.resize { position: absolute; top: 0; bottom: 0; left: -4px; width: 8px; z-index: 5; cursor: col-resize; touch-action: none; }
+.resize::after { content: ''; position: absolute; width: 2px; height: 42px; border-radius: 2px; background: #8c959f; top: calc(50% - 21px); left: 3px; }
+.resize:hover,.resize.dragging { background: #2f81f740; }
+@container (max-width: 500px) {
+  .keyboard { display: none; }
+  footer { justify-content: flex-end; }
+  .media { padding: 16px; }
+  .filters { padding: 10px 12px; }
+  .tabs button { padding: 6px; font-size: 11px; }
+}
+.location-button { margin-right: auto; color: var(--muted); background: none; border: 0; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.location-button:hover { color: var(--blue); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }

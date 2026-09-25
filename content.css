@@ -1,0 +1,36 @@
+/* Page layout only; the gallery itself is isolated inside a shadow root. */
+#ghmg-root {
+  position: fixed;
+  inset: 0 0 0 var(--ghmg-left, 44vw);
+  z-index: 2147483600;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+#ghmg-root[hidden] { display: none !important; }
+html.ghmg-open { overflow-x: hidden !important; overflow-anchor: none; }
+html.ghmg-open body {
+  width: calc(var(--ghmg-left) + 344px) !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+html.ghmg-open .repository-content .container-xl,
+html.ghmg-open .repository-content .container-lg,
+html.ghmg-open #repo-content-pjax-container .container-xl {
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+html.ghmg-open .ghmg-selected {
+  outline: 3px solid #2f81f7 !important;
+  outline-offset: 4px !important;
+  border-radius: 3px;
+}
+@media (max-width: 799px) {
+  html.ghmg-open body { width: 100% !important; }
+}
